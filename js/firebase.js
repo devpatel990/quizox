@@ -1,41 +1,34 @@
 // Firebase Configuration for Quizox
-// To set up Firebase for your own project:
-// 1. Go to https://console.firebase.google.com/
-// 2. Create a new project
-// 3. Add a Web App to get your config
-// 4. Enable Firestore Database
-// 5. Set rules to allow read/write (for demo purposes)
-// 6. Replace the config below with your own
-
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
+// Using Firebase Compat SDK for browser use
 
 // Initialize Firebase
-let app, db, auth;
+let db = null;
 
 function initFirebase() {
-    // Check if already initialized
-    if (typeof firebase !== 'undefined' && app) {
-        return true;
-    }
-    
-    // Check if Firebase SDK is loaded
     if (typeof firebase === 'undefined') {
         console.log('Firebase SDK not loaded');
         return false;
     }
     
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZi9B_y-Va5ADKVic_5kRc4OZEL2O7EUc",
+        authDomain: "quizox-f2b39.firebaseapp.com",
+        projectId: "quizox-f2b39",
+        storageBucket: "quizox-f2b39.firebasestorage.app",
+        messagingSenderId: "117459133919",
+        appId: "1:117459133919:web:ca28b089ec2d8afe73d06a",
+        measurementId: "G-3S3FS2PPZP"
+    };
+    
     try {
-        // Initialize Firebase
-        app = firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase app
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        // Initialize Firestore
         db = firebase.firestore();
-        auth = firebase.auth();
+        console.log('Firebase initialized successfully!');
         return true;
     } catch (error) {
         console.error('Firebase init error:', error);
@@ -45,19 +38,19 @@ function initFirebase() {
 
 // Check if Firebase is configured
 function isFirebaseConfigured() {
-    return firebaseConfig.apiKey !== "YOUR_API_KEY";
+    return db !== null;
 }
 
 // Save score to Firebase
 async function saveScoreToFirebase(scoreData) {
-    if (!initFirebase() || !isFirebaseConfigured()) {
-        console.log('Firebase not configured, saving to localStorage only');
+    if (!db) {
+        console.log('Firebase not initialized, saving to localStorage only');
         saveScoreLocally(scoreData);
         return false;
     }
     
     try {
-        await db.collection('leaderboard').add({
+        await db.collection("leaderboard").add({
             playerName: scoreData.playerName,
             score: scoreData.score,
             total: scoreData.total,
@@ -69,9 +62,11 @@ async function saveScoreToFirebase(scoreData) {
         
         // Also save locally
         saveScoreLocally(scoreData);
+        console.log('Score saved to Firebase!');
         return true;
     } catch (error) {
-        console.error('Error saving score:', error);
+        console.error('Error saving to Firebase:', error);
+        // Fallback to localStorage
         saveScoreLocally(scoreData);
         return false;
     }
@@ -86,27 +81,39 @@ function saveScoreLocally(scoreData) {
 
 // Get top scores from Firebase
 async function getLeaderboardFromFirebase(limitCount = 50) {
-    if (!initFirebase() || !isFirebaseConfigured()) {
+    if (!db) {
         return null;
     }
     
     try {
-        const snapshot = await db.collection('leaderboard')
-            .orderBy('percentage', 'desc')
-            .orderBy('timestamp', 'desc')
+        const snapshot = await db.collection("leaderboard")
+            .orderBy("percentage", "desc")
             .limit(limitCount)
             .get();
+        
+        if (snapshot.empty) {
+            return [];
+        }
         
         return snapshot.docs.map((doc, index) => ({
             id: doc.id,
             rank: index + 1,
-            ...doc.data()
+            playerName: doc.data().playerName,
+            score: doc.data().score,
+            total: doc.data().total,
+            percentage: doc.data().percentage,
+            category: doc.data().category,
+            difficulty: doc.data().difficulty,
+            timestamp: doc.data().timestamp
         }));
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         return null;
     }
 }
+
+// Auto-initialize on load
+initFirebase();
 
 // Export functions
 window.QuizoxFirebase = {

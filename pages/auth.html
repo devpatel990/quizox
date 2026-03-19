@@ -189,7 +189,7 @@
                 localStorage.setItem('quizoxUser', JSON.stringify(userData));
                 
                 // Redirect to home
-                window.location.href = '../index.html';
+                window.location.href = homeUrl;
             } else {
                 // User is signed out
                 loadingState.style.display = 'none';
@@ -209,10 +209,23 @@
 
         let isLogin = true;
 
+        // Get base path for GitHub Pages
+        const getBasePath = () => {
+            const path = window.location.pathname;
+            const quizoxIndex = path.indexOf('/quizox/');
+            if (quizoxIndex !== -1) {
+                return path.substring(0, quizoxIndex + '/quizox'.length);
+            }
+            return '';
+        };
+
+        const basePath = getBasePath();
+        const homeUrl = basePath + '/index.html';
+        
         // Check if already logged in
         const savedUser = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
         if (savedUser && savedUser.uid) {
-            window.location.href = '../index.html';
+            window.location.href = homeUrl;
         }
 
         toggleAuth.addEventListener('click', (e) => {

@@ -387,12 +387,12 @@ function getResultMessage(percentage) {
 }
 
 function showLoading() {
-    loading.style.display = 'block';
+    loading.classList.add('active');
     quizSetup.style.display = 'none';
 }
 
 function hideLoading() {
-    loading.style.display = 'none';
+    loading.classList.remove('active');
 }
 
 function showError(message) {

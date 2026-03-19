@@ -156,7 +156,17 @@
         </div>
 
         <!-- Loading State -->
-        <div class="loading-spinner" id="loading" style="display: none;"></div>
+        <div class="loading-overlay" id="loading">
+            <div class="loading-container">
+                <div class="loading-orbs">
+                    <div class="loading-orb"></div>
+                    <div class="loading-orb"></div>
+                    <div class="loading-orb"></div>
+                </div>
+                <p class="loading-text">Loading Questions...</p>
+                <p class="loading-subtext">Fetching trivia from the database</p>
+            </div>
+        </div>
 
         <!-- Error State -->
         <div class="error-message" id="error-message" style="display: none;"></div>

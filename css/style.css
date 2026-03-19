@@ -223,7 +223,7 @@ a {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 9999;
+    z-index: 999;
     animation: slideUp 0.5s ease;
 }
 
@@ -1354,18 +1354,60 @@ a {
 }
 
 /* Loading & Error States */
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid var(--glass);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 100px auto;
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 26, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 10000;
+    backdrop-filter: blur(10px);
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-container {
+    text-align: center;
+}
+
+.loading-orbs {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.loading-orb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gradient);
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-orb:nth-child(1) { animation-delay: -0.32s; }
+.loading-orb:nth-child(2) { animation-delay: -0.16s; }
+.loading-orb:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.2); }
+}
+
+.loading-text {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.loading-subtext {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 8px;
 }
 
 .error-message {

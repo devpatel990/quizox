@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -41,6 +44,7 @@
         <div class="leaderboard-header">
             <h1>Quizox <span class="gradient-text">Leaderboard</span></h1>
             <p>Top players from around the world</p>
+            <p id="firebase-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;"></p>
         </div>
 
         <div class="leaderboard-tabs">
@@ -56,7 +60,11 @@
                 <span>Percentage</span>
             </div>
             <div id="leaderboard-body">
-                <!-- Scores will be loaded here -->
+                <!-- Loading state -->
+                <div style="text-align: center; padding: 48px; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                    <p style="margin-top: 16px;">Loading leaderboard...</p>
+                </div>
             </div>
         </div>
 
@@ -73,49 +81,25 @@
         </div>
     </main>
 
+    <!-- Firebase Config -->
+    <script src="../js/firebase.js"></script>
     <script src="../js/main.js"></script>
     <script>
-        // Generate sample data for demo
-        function generateSampleData() {
-            const samplePlayers = [
-                { name: 'QuizMaster Pro', email: 'quiz@pro.com' },
-                { name: 'BrainStorm', email: 'brain@storm.com' },
-                { name: 'TriviaKing', email: 'trivia@king.com' },
-                { name: 'KnowledgeNinja', email: 'ninja@know.com' },
-                { name: 'SmartCookie', email: 'cookie@smart.com' },
-                { name: 'WisdomSeeker', email: 'wisdom@seek.com' },
-                { name: 'FactHunter', email: 'fact@hunt.com' },
-                { name: 'MindBender', email: 'bend@mind.com' },
-                { name: 'PuzzlePro', email: 'puzzle@pro.com' },
-                { name: 'GeniusBar', email: 'genius@bar.com' }
-            ];
-            
-            const scores = JSON.parse(localStorage.getItem('quizoxScores') || '[]');
-            
-            // Add sample scores if empty
-            if (scores.length === 0) {
-                const sampleScores = [];
-                samplePlayers.forEach((player, index) => {
-                    const numScores = Math.floor(Math.random() * 5) + 1;
-                    for (let i = 0; i < numScores; i++) {
-                        const total = [10, 15, 20, 25, 30][Math.floor(Math.random() * 5)];
-                        const score = Math.floor(total * (0.4 + Math.random() * 0.6));
-                        sampleScores.push({
-                            ...player,
-                            score,
-                            total,
-                            percentage: Math.round((score / total) * 100),
-                            date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-                            category: ['9', '17', '21', '23', '27'][Math.floor(Math.random() * 5)],
-                            difficulty: ['easy', 'medium', 'hard'][Math.floor(Math.random() * 3)]
-                        });
-                    }
-                });
-                localStorage.setItem('quizoxScores', JSON.stringify(sampleScores));
-            }
-        }
-
-        generateSampleData();
+        // Category names mapping
+        const categoryNames = {
+            'any': 'Mixed',
+            '9': 'General',
+            '17': 'Science',
+            '21': 'Sports',
+            '23': 'History',
+            '11': 'Film',
+            '18': 'Computers',
+            '27': 'Animals',
+            '22': 'Geography',
+            '14': 'Television',
+            '15': 'Video Games',
+            '25': 'Art'
+        };
 
         // Tab switching
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -139,27 +123,70 @@
             });
         });
 
-        // Load Global Leaderboard
-        function loadGlobalLeaderboard() {
+        // Load Global Leaderboard from Firebase
+        async function loadGlobalLeaderboard() {
+            const body = document.getElementById('leaderboard-body');
+            const statusEl = document.getElementById('firebase-status');
+            
+            // Try to load from Firebase first
+            if (window.QuizoxFirebase && window.QuizoxFirebase.isFirebaseConfigured()) {
+                statusEl.textContent = 'Connected to Firebase';
+                statusEl.style.color = 'var(--success)';
+                
+                try {
+                    const firebaseScores = await window.QuizoxFirebase.getLeaderboardFromFirebase(50);
+                    
+                    if (firebaseScores && firebaseScores.length > 0) {
+                        renderLeaderboard(firebaseScores, body);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Firebase fetch failed, using local data');
+                }
+            } else {
+                statusEl.textContent = 'Using local data (Configure Firebase for global leaderboard)';
+                statusEl.style.color = 'var(--warning)';
+            }
+            
+            // Fallback to localStorage
+            loadLocalLeaderboard(body);
+        }
+
+        function loadLocalLeaderboard(body) {
             const scores = JSON.parse(localStorage.getItem('quizoxScores') || '[]');
             const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
             
-            // Get best score per player
+            if (scores.length === 0) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 48px; color: var(--text-muted);">
+                        <i class="fas fa-trophy" style="font-size: 3rem; margin-bottom: 16px; display: block;"></i>
+                        <p>No scores yet. Be the first to play!</p>
+                        <a href="quiz.html" class="btn btn-primary" style="margin-top: 16px;">
+                            <i class="fas fa-play"></i> Play Now
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
             const playerBestScores = {};
             scores.forEach(s => {
-                const key = s.playerName || s.name || 'Unknown';
+                const key = s.playerName || 'Guest';
                 if (!playerBestScores[key] || s.percentage > playerBestScores[key].percentage) {
                     playerBestScores[key] = s;
                 }
             });
-            
-            // Convert to array and sort
-            let sortedScores = Object.values(playerBestScores).sort((a, b) => {
+
+            const sortedScores = Object.values(playerBestScores).sort((a, b) => {
                 if (b.percentage !== a.percentage) return b.percentage - a.percentage;
                 return b.score - a.score;
-            });
-            
-            const body = document.getElementById('leaderboard-body');
+            }).slice(0, 50);
+
+            renderLeaderboard(sortedScores, body);
+        }
+
+        function renderLeaderboard(sortedScores, body) {
+            const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
             
             if (sortedScores.length === 0) {
                 body.innerHTML = `
@@ -173,26 +200,14 @@
                 `;
                 return;
             }
-            
-            // Limit to top 50
-            sortedScores = sortedScores.slice(0, 50);
-            
-            const categoryNames = {
-                '9': 'General',
-                '17': 'Science',
-                '21': 'Sports',
-                '23': 'History',
-                '11': 'Film',
-                '20': 'Music',
-                '18': 'Computers',
-                '27': 'Animals',
-                '22': 'Geography'
-            };
-            
+
             body.innerHTML = sortedScores.map((s, index) => {
                 const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
-                const initials = (s.playerName || s.name || 'UN').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                const isCurrentUser = user && (s.playerName === user.name || s.email === user.email);
+                const name = s.playerName || 'Guest';
+                const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const isCurrentUser = user && name === user.name;
+                const catName = categoryNames[s.category] || 'Mixed';
+                const diffName = s.difficulty ? s.difficulty.charAt(0).toUpperCase() + s.difficulty.slice(1) : 'Any';
                 
                 return `
                     <div class="table-row" style="${isCurrentUser ? 'background: var(--gradient-light);' : ''}">
@@ -200,8 +215,8 @@
                         <div class="player-info">
                             <div class="player-avatar">${initials}</div>
                             <div class="player-name">
-                                ${s.playerName || s.name}
-                                <span>${categoryNames[s.category] || 'Mixed'} • ${s.difficulty || 'Any'}</span>
+                                ${name}${isCurrentUser ? ' (You)' : ''}
+                                <span>${catName} • ${diffName}</span>
                             </div>
                         </div>
                         <span>${s.score}/${s.total}</span>
@@ -215,9 +230,10 @@
         function loadMyScores() {
             const scores = JSON.parse(localStorage.getItem('quizoxScores') || '[]');
             const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
+            const userName = user ? user.name : 'Guest';
             
             const myScores = scores
-                .filter(s => !user || s.playerName === user.name || s.email === user.email)
+                .filter(s => (s.playerName || 'Guest') === userName)
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
             
             const body = document.getElementById('my-scores-body');
@@ -235,18 +251,6 @@
                 return;
             }
             
-            const categoryNames = {
-                '9': 'General',
-                '17': 'Science',
-                '21': 'Sports',
-                '23': 'History',
-                '11': 'Film',
-                '20': 'Music',
-                '18': 'Computers',
-                '27': 'Animals',
-                '22': 'Geography'
-            };
-            
             const bestScore = Math.max(...myScores.map(s => s.percentage));
             
             body.innerHTML = myScores.map((s, index) => {
@@ -256,13 +260,15 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
+                const catName = categoryNames[s.category] || 'Mixed';
+                const diffName = s.difficulty ? s.difficulty.charAt(0).toUpperCase() + s.difficulty.slice(1) : 'Any';
                 
                 return `
                     <div class="table-row">
                         <span>#${index + 1}</span>
                         <div class="player-info">
                             <div class="player-name" style="text-transform: capitalize;">
-                                ${categoryNames[s.category] || 'Mixed'} • ${s.difficulty || 'Any'}
+                                ${catName} • ${diffName}
                                 <span>${date}</span>
                             </div>
                         </div>

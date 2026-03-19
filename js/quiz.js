@@ -115,31 +115,36 @@ async function startQuiz() {
 
 async function fetchQuestions() {
     const amount = questionCount;
-    let url = `${API_URL}?amount=${amount}`;
+    const url = `${API_URL}?amount=${amount}&type=multiple&encode=base64`;
+    
+    let apiUrl = url;
     
     if (selectedCategory !== 'any') {
-        url += `&category=${selectedCategory}`;
+        apiUrl += `&category=${selectedCategory}`;
     }
     
     if (selectedDifficulty !== 'any') {
-        url += `&difficulty=${selectedDifficulty}`;
+        apiUrl += `&difficulty=${selectedDifficulty}`;
     }
     
-    const response = await fetch(url);
+    const response = await fetch(apiUrl);
     const data = await response.json();
     
     if (data.response_code !== 0) {
         // Try without category if it fails
         if (selectedCategory !== 'any') {
-            url = `${API_URL}?amount=${amount}&difficulty=${selectedDifficulty !== 'any' ? selectedDifficulty : ''}`;
-            const res = await fetch(url);
+            let fallbackUrl = `${API_URL}?amount=${amount}&type=multiple&encode=base64`;
+            if (selectedDifficulty !== 'any') {
+                fallbackUrl += `&difficulty=${selectedDifficulty}`;
+            }
+            const res = await fetch(fallbackUrl);
             const dt = await res.json();
             if (dt.response_code === 0) {
                 return dt.results.map(q => ({
                     ...q,
-                    question: decodeHTML(q.question),
-                    correct_answer: decodeHTML(q.correct_answer),
-                    incorrect_answers: q.incorrect_answers.map(a => decodeHTML(a))
+                    question: decodeText(q.question),
+                    correct_answer: decodeText(q.correct_answer),
+                    incorrect_answers: q.incorrect_answers.map(a => decodeText(a))
                 }));
             }
         }
@@ -148,10 +153,27 @@ async function fetchQuestions() {
     
     return data.results.map(q => ({
         ...q,
-        question: decodeHTML(q.question),
-        correct_answer: decodeHTML(q.correct_answer),
-        incorrect_answers: q.incorrect_answers.map(a => decodeHTML(a))
+        question: decodeText(q.question),
+        correct_answer: decodeText(q.correct_answer),
+        incorrect_answers: q.incorrect_answers.map(a => decodeText(a))
     }));
+}
+
+function decodeBase64(str) {
+    try {
+        return atob(str);
+    } catch (e) {
+        return str;
+    }
+}
+
+function decodeText(str) {
+    // Try base64 first, fallback to HTML entities
+    try {
+        return decodeBase64(str);
+    } catch (e) {
+        return decodeHTML(str);
+    }
 }
 
 function decodeHTML(html) {

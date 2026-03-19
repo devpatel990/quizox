@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /leaderboard/{document} {
+      // Anyone can read the leaderboard
+      allow read: if true;
+      
+      // Anyone can add scores, but must have valid data
+      allow create: if request.resource.data.keys().hasAll([
+        'playerName',
+        'score', 
+        'total',
+        'percentage',
+        'category',
+        'difficulty'
+      ])
+      && request.resource.data.score is int
+      && request.resource.data.total is int
+      && request.resource.data.percentage is int
+      && request.resource.data.percentage >= 0
+      && request.resource.data.percentage <= 100;
+      
+      // No updates or deletes allowed (scores are permanent)
+      allow update, delete: if false;
+    }
+  }
+}

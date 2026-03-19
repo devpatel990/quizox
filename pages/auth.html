@@ -250,7 +250,23 @@
 
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                
+                // Check if email is verified
+                if (!userCredential.user.emailVerified) {
+                    // Sign out if not verified
+                    await auth.signOut();
+                    
+                    alert('⚠️ Email not verified!\n\nPlease check your email and click the verification link first.\n\n📧 Sent to: ' + email);
+                    
+                    // Switch to login with message
+                    authSubtitle.textContent = 'Verify your email first, then login';
+                    return;
+                }
+                
                 console.log('Logged in:', userCredential.user.email);
+                
+                // Redirect to home on success
+                window.location.href = '../index.html';
             } catch (error) {
                 console.error('Login error:', error);
                 let message = 'Login failed. ';
@@ -309,8 +325,23 @@
                 await userCredential.user.updateProfile({
                     displayName: name
                 });
+
+                // Send verification email
+                await userCredential.user.sendEmailVerification();
                 
-                console.log('Account created:', userCredential.user.email);
+                // Show verification message
+                alert('✅ Account created!\n\n📧 Verification email sent to: ' + email + '\n\nPlease check your email and click the verification link to activate your account.');
+                
+                // Sign out - user must verify first
+                await auth.signOut();
+                
+                // Switch to login form
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                authTitle.textContent = 'Verify Your Email';
+                authSubtitle.textContent = 'Check your email and click the verification link, then login';
+                authFooter.innerHTML = 'Don\'t have an account? <a href="#" id="toggle-auth">Sign up</a>';
+                
             } catch (error) {
                 console.error('Signup error:', error);
                 let message = 'Signup failed. ';

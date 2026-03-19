@@ -28,7 +28,7 @@
                 <span class="logo-text">Quizox</span>
             </a>
             <div class="nav-links">
-                <a href="quiz.html" class="nav-link"><i class="fas fa-play"></i> Play</a>
+                <a href="quiz.html" class="nav-link active"><i class="fas fa-play"></i> Play</a>
                 <a href="leaderboard.html" class="nav-link"><i class="fas fa-trophy"></i> Leaderboard</a>
                 <a href="auth.html" class="nav-link" id="auth-link"><i class="fas fa-user"></i> Login</a>
                 <button id="theme-toggle" class="theme-btn"><i class="fas fa-moon"></i></button>
@@ -69,10 +69,6 @@
                         <i class="fas fa-film"></i>
                         <span>Film</span>
                     </button>
-                    <button class="category-btn" data-category="20">
-                        <i class="fas fa-music"></i>
-                        <span>Music</span>
-                    </button>
                     <button class="category-btn" data-category="18">
                         <i class="fas fa-laptop-code"></i>
                         <span>Computers</span>
@@ -84,10 +80,6 @@
                     <button class="category-btn" data-category="22">
                         <i class="fas fa-globe-americas"></i>
                         <span>Geography</span>
-                    </button>
-                    <button class="category-btn" data-category="12">
-                        <i class="fas fa-music"></i>
-                        <span>Music</span>
                     </button>
                     <button class="category-btn" data-category="14">
                         <i class="fas fa-tv"></i>
@@ -107,7 +99,7 @@
             <div class="setup-card">
                 <h3><i class="fas fa-signal"></i> Select Difficulty</h3>
                 <div class="difficulty-btns">
-                    <button class="difficulty-btn easy active" data-difficulty="any">Any Difficulty</button>
+                    <button class="difficulty-btn active" data-difficulty="any">Any Difficulty</button>
                     <button class="difficulty-btn easy" data-difficulty="easy">Easy</button>
                     <button class="difficulty-btn medium" data-difficulty="medium">Medium</button>
                     <button class="difficulty-btn hard" data-difficulty="hard">Hard</button>
@@ -149,34 +141,430 @@
 
             <div class="game-card">
                 <h2 class="game-question" id="game-question">Loading question...</h2>
-                <div class="game-options" id="game-options">
-                    <!-- Options will be inserted here -->
-                </div>
+                <div class="game-options" id="game-options"></div>
             </div>
         </div>
 
-        <!-- Loading State -->
-        <div class="loading-overlay" id="loading">
-            <div class="loading-container">
-                <div class="loading-orbs">
-                    <div class="loading-orb"></div>
-                    <div class="loading-orb"></div>
-                    <div class="loading-orb"></div>
-                </div>
-                <p class="loading-text">Loading Questions...</p>
-                <p class="loading-subtext">Fetching trivia from the database</p>
-            </div>
-        </div>
-
-        <!-- Error State -->
-        <div class="error-message" id="error-message" style="display: none; max-width: 600px; width: 100%;"></div>
+        <!-- Results Section -->
+        <div class="results-card" id="results-card" style="display: none;"></div>
     </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 15, 26, 0.95); z-index: 10000; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="display: flex; gap: 12px;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: bounce 1.4s infinite ease-in-out both;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.16s;"></div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: bounce 1.4s infinite ease-in-out both; animation-delay: 0.32s;"></div>
+        </div>
+        <p style="color: white; margin-top: 24px; font-size: 1.2rem;">Loading Questions...</p>
+        <p style="color: #6b6b80; margin-top: 8px;">Fetching trivia from database</p>
+    </div>
+
+    <style>
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.2); }
+        }
+    </style>
 
     <button class="sound-toggle" id="sound-toggle">
         <i class="fas fa-volume-up"></i>
     </button>
 
     <script src="../js/main.js"></script>
-    <script src="../js/quiz.js"></script>
+    <script>
+        // Quiz State
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedCategory = 'any';
+        let selectedDifficulty = 'any';
+        let questionCount = 10;
+        let timerInterval = null;
+        let timeLeft = 15;
+        let isAnswered = false;
+
+        // DOM Elements
+        const quizSetup = document.getElementById('quiz-setup');
+        const quizGame = document.getElementById('quiz-game');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const startBtn = document.getElementById('start-btn');
+        const questionRange = document.getElementById('question-range');
+        const questionCountDisplay = document.getElementById('question-count-display');
+        const categoryGrid = document.getElementById('category-grid');
+        const gameQuestion = document.getElementById('game-question');
+        const gameOptions = document.getElementById('game-options');
+        const timer = document.getElementById('timer');
+        const timerDisplay = document.getElementById('timer-display');
+        const progressFill = document.getElementById('progress-fill');
+        const currentQuestionEl = document.getElementById('current-question');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const currentCategoryEl = document.getElementById('current-category');
+        const currentDifficultyEl = document.getElementById('current-difficulty');
+        const resultsCard = document.getElementById('results-card');
+
+        // Category Names
+        const categoryNames = {
+            'any': 'Mixed',
+            '9': 'General Knowledge',
+            '17': 'Science & Nature',
+            '21': 'Sports',
+            '23': 'History',
+            '11': 'Film',
+            '18': 'Computers',
+            '27': 'Animals',
+            '22': 'Geography',
+            '14': 'Television',
+            '15': 'Video Games',
+            '25': 'Art'
+        };
+
+        // Sound Toggle
+        const soundToggle = document.getElementById('sound-toggle');
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            soundToggle.innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            soundToggle.classList.toggle('muted', !soundEnabled);
+        });
+
+        // Question Count Slider
+        questionRange.addEventListener('input', () => {
+            questionCountDisplay.textContent = `${questionRange.value} Questions`;
+            questionCount = parseInt(questionRange.value);
+        });
+
+        // Category Selection
+        categoryGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('.category-btn');
+            if (btn) {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCategory = btn.dataset.category;
+            }
+        });
+
+        // Difficulty Selection
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDifficulty = btn.dataset.difficulty;
+            });
+        });
+
+        // Decode Base64
+        function decodeBase64(str) {
+            try {
+                return atob(str);
+            } catch (e) {
+                return str;
+            }
+        }
+
+        // Decode Text (Base64 first, then HTML entities)
+        function decodeText(str) {
+            try {
+                return decodeBase64(str);
+            } catch (e) {
+                const txt = document.createElement('textarea');
+                txt.innerHTML = str;
+                return txt.value;
+            }
+        }
+
+        // Show/Hide Loading
+        function showLoading() {
+            loadingOverlay.style.display = 'flex';
+            quizSetup.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        // Start Quiz
+        startBtn.addEventListener('click', async () => {
+            await startQuiz();
+        });
+
+        async function startQuiz() {
+            showLoading();
+            
+            try {
+                questions = await fetchQuestions();
+                
+                if (questions.length === 0) {
+                    alert('No questions available. Please try different settings.');
+                    hideLoading();
+                    quizSetup.style.display = 'block';
+                    return;
+                }
+                
+                currentQuestionIndex = 0;
+                score = 0;
+                
+                hideLoading();
+                quizSetup.style.display = 'none';
+                quizGame.style.display = 'block';
+                resultsCard.style.display = 'none';
+                
+                displayQuestion();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load questions. Please check your internet connection.');
+                hideLoading();
+                quizSetup.style.display = 'block';
+            }
+        }
+
+        async function fetchQuestions() {
+            const amount = questionCount;
+            let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple&encode=base64`;
+            
+            if (selectedCategory !== 'any') {
+                url += `&category=${selectedCategory}`;
+            }
+            
+            if (selectedDifficulty !== 'any') {
+                url += `&difficulty=${selectedDifficulty}`;
+            }
+            
+            console.log('Fetching:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('API Response:', data);
+            
+            if (data.response_code !== 0) {
+                return [];
+            }
+            
+            return data.results.map(q => ({
+                question: decodeText(q.question),
+                correct_answer: decodeText(q.correct_answer),
+                incorrect_answers: q.incorrect_answers.map(a => decodeText(a)),
+                difficulty: q.difficulty
+            }));
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            
+            currentCategoryEl.textContent = categoryNames[selectedCategory] || 'Mixed';
+            currentDifficultyEl.textContent = question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
+            
+            const progress = (currentQuestionIndex / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            currentQuestionEl.textContent = currentQuestionIndex + 1;
+            totalQuestionsEl.textContent = questions.length;
+            
+            gameQuestion.textContent = question.question;
+            
+            const options = shuffleArray([...question.incorrect_answers, question.correct_answer]);
+            gameOptions.innerHTML = '';
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'game-option';
+                btn.innerHTML = `
+                    <span class="option-letter">${letters[index]}</span>
+                    <span class="option-text">${option}</span>
+                `;
+                btn.onclick = () => selectAnswer(btn, option, question.correct_answer);
+                gameOptions.appendChild(btn);
+            });
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 15;
+            timerDisplay.textContent = timeLeft;
+            timer.className = 'timer';
+            isAnswered = false;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                
+                if (timeLeft <= 5) {
+                    timer.classList.add('danger');
+                } else if (timeLeft <= 10) {
+                    timer.classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!isAnswered) {
+                        timeUp();
+                    }
+                }
+            }, 1000);
+        }
+
+        function timeUp() {
+            isAnswered = true;
+            const question = questions[currentQuestionIndex];
+            
+            document.querySelectorAll('.game-option').forEach(btn => {
+                btn.classList.add('disabled');
+                if (btn.querySelector('.option-text').textContent === question.correct_answer) {
+                    btn.classList.add('correct');
+                }
+            });
+            
+            if (window.QuizoxApp && window.QuizoxApp.playSound) {
+                window.QuizoxApp.playSound('wrong');
+            }
+            
+            setTimeout(nextQuestion, 1500);
+        }
+
+        function selectAnswer(btn, selected, correct) {
+            if (isAnswered) return;
+            
+            isAnswered = true;
+            clearInterval(timerInterval);
+            
+            const isCorrect = selected === correct;
+            
+            document.querySelectorAll('.game-option').forEach(b => {
+                b.classList.add('disabled');
+                if (b.querySelector('.option-text').textContent === correct) {
+                    b.classList.add('correct');
+                }
+            });
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                score++;
+                if (window.QuizoxApp && window.QuizoxApp.playSound) {
+                    window.QuizoxApp.playSound('correct');
+                }
+            } else {
+                btn.classList.add('wrong');
+                if (window.QuizoxApp && window.QuizoxApp.playSound) {
+                    window.QuizoxApp.playSound('wrong');
+                }
+            }
+            
+            setTimeout(nextQuestion, 1500);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const percentage = Math.round((score / questions.length) * 100);
+            
+            // Save score
+            const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
+            const scores = JSON.parse(localStorage.getItem('quizoxScores') || '[]');
+            
+            scores.push({
+                score,
+                total: questions.length,
+                percentage,
+                category: selectedCategory,
+                difficulty: selectedDifficulty,
+                date: new Date().toISOString(),
+                playerName: user ? user.name : 'Guest'
+            });
+            
+            localStorage.setItem('quizoxScores', JSON.stringify(scores));
+            
+            quizGame.style.display = 'none';
+            resultsCard.style.display = 'block';
+            
+            const icon = percentage >= 80 ? '<i class="fas fa-trophy"></i>' : 
+                        percentage >= 50 ? '<i class="fas fa-star"></i>' : 
+                        '<i class="fas fa-brain"></i>';
+            
+            const title = percentage >= 90 ? 'Outstanding!' :
+                         percentage >= 80 ? 'Excellent!' :
+                         percentage >= 70 ? 'Great Job!' :
+                         percentage >= 50 ? 'Good Effort!' :
+                         percentage >= 30 ? 'Keep Trying!' : 'Better Luck Next Time!';
+            
+            const message = percentage >= 80 ? 'You really know your stuff!' :
+                           percentage >= 50 ? 'Not bad! Keep practicing!' :
+                           'Every quiz is a chance to learn!';
+            
+            resultsCard.innerHTML = `
+                <div class="results-icon">${icon}</div>
+                <h1>${title}</h1>
+                <p class="message">${message}</p>
+                
+                <div class="percentage-circle" style="background: conic-gradient(var(--primary) ${percentage}%, var(--glass) 0%);">
+                    <span>${percentage}%</span>
+                </div>
+                
+                <div class="results-stats">
+                    <div class="result-stat">
+                        <div class="number">${score}</div>
+                        <div class="label">Correct</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="number">${questions.length - score}</div>
+                        <div class="label">Wrong</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="number">${questions.length}</div>
+                        <div class="label">Total</div>
+                    </div>
+                </div>
+                
+                <div class="results-actions">
+                    <button class="btn btn-primary btn-lg" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> Play Again
+                    </button>
+                    <a href="leaderboard.html" class="btn btn-outline btn-lg">
+                        <i class="fas fa-trophy"></i> Leaderboard
+                    </a>
+                    <button class="btn btn-secondary" onclick="shareScore()">
+                        <i class="fas fa-share"></i> Share Score
+                    </button>
+                </div>
+            `;
+            
+            if (window.QuizoxApp && window.QuizoxApp.playSound) {
+                window.QuizoxApp.playSound('complete');
+            }
+        }
+
+        function shareScore() {
+            const percentage = Math.round((score / questions.length) * 100);
+            const text = `🧠 I scored ${score}/${questions.length} (${percentage}%) on Quizox! Can you beat me?`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Quizox Score', text: text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Score copied to clipboard!');
+            }
+        }
+    </script>
 </body>
 </html>

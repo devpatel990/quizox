@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -30,6 +34,7 @@
             <div class="nav-links">
                 <a href="quiz.html" class="nav-link"><i class="fas fa-play"></i> Play</a>
                 <a href="leaderboard.html" class="nav-link"><i class="fas fa-trophy"></i> Leaderboard</a>
+                <a href="auth.html" class="nav-link active"><i class="fas fa-user"></i> Login</a>
                 <button id="theme-toggle" class="theme-btn"><i class="fas fa-moon"></i></button>
             </div>
         </div>
@@ -57,18 +62,23 @@
                 <p id="auth-subtitle">Sign in to track your scores</p>
             </div>
 
+            <!-- Loading State -->
+            <div id="loading-state" style="text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+                <p style="margin-top: 16px; color: var(--text-secondary);">Connecting to Firebase...</p>
+            </div>
+
             <!-- Login Form -->
-            <form id="login-form">
+            <form id="login-form" style="display: none;">
                 <div class="form-group">
                     <label for="login-email">Email Address</label>
                     <input type="email" id="login-email" placeholder="Enter your email" required>
-                    <span class="error-msg">Please enter a valid email</span>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" placeholder="Enter your password" required>
-                    <span class="error-msg">Password is required</span>
                 </div>
+                <div id="login-error" style="color: var(--error); font-size: 0.85rem; margin-bottom: 16px; display: none;"></div>
                 <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
                     <i class="fas fa-sign-in-alt"></i> Sign In
                 </button>
@@ -79,23 +89,20 @@
                 <div class="form-group">
                     <label for="signup-name">Full Name</label>
                     <input type="text" id="signup-name" placeholder="Enter your name" required>
-                    <span class="error-msg">Name is required</span>
                 </div>
                 <div class="form-group">
                     <label for="signup-email">Email Address</label>
                     <input type="email" id="signup-email" placeholder="Enter your email" required>
-                    <span class="error-msg">Please enter a valid email</span>
                 </div>
                 <div class="form-group">
                     <label for="signup-password">Password</label>
                     <input type="password" id="signup-password" placeholder="Create a password (min 6 chars)" required>
-                    <span class="error-msg">Password must be at least 6 characters</span>
                 </div>
                 <div class="form-group">
                     <label for="signup-confirm">Confirm Password</label>
                     <input type="password" id="signup-confirm" placeholder="Confirm your password" required>
-                    <span class="error-msg">Passwords do not match</span>
                 </div>
+                <div id="signup-error" style="color: var(--error); font-size: 0.85rem; margin-bottom: 16px; display: none;"></div>
                 <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
                     <i class="fas fa-user-plus"></i> Create Account
                 </button>
@@ -119,27 +126,92 @@
         </div>
     </main>
 
+    <script src="../js/firebase.js"></script>
     <script src="../js/main.js"></script>
     <script>
-        // Auth Toggle
+        // Firebase Auth instance
+        let auth;
+
+        // Initialize Firebase Auth
+        function initAuth() {
+            if (typeof firebase === 'undefined') {
+                showError('Firebase not loaded. Please refresh the page.');
+                return;
+            }
+
+            // Firebase config
+            const firebaseConfig = {
+                apiKey: "AIzaSyBZi9B_y-Va5ADKVic_5kRc4OZEL2O7EUc",
+                authDomain: "quizox-f2b39.firebaseapp.com",
+                projectId: "quizox-f2b39",
+                storageBucket: "quizox-f2b39.firebasestorage.app",
+                messagingSenderId: "117459133919",
+                appId: "1:117459133919:web:ca28b089ec2d8afe73d06a"
+            };
+
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+
+                // Listen for auth state changes
+                auth.onAuthStateChanged(handleAuthStateChange);
+
+            } catch (error) {
+                console.error('Auth init error:', error);
+                showError('Failed to connect to Firebase.');
+            }
+        }
+
+        // Handle auth state
+        function handleAuthStateChange(user) {
+            const loadingState = document.getElementById('loading-state');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            if (user) {
+                // User is signed in
+                const userData = {
+                    uid: user.uid,
+                    name: user.displayName || user.email.split('@')[0],
+                    email: user.email,
+                    loginMethod: user.providerData[0]?.providerId || 'email'
+                };
+                localStorage.setItem('quizoxUser', JSON.stringify(userData));
+                
+                // Redirect to home
+                window.location.href = '../index.html';
+            } else {
+                // User is signed out
+                loadingState.style.display = 'none';
+                loginForm.style.display = 'block';
+            }
+        }
+
+        // DOM Elements
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
         const authTitle = document.getElementById('auth-title');
         const authSubtitle = document.getElementById('auth-subtitle');
         const authFooter = document.getElementById('auth-footer');
         const toggleAuth = document.getElementById('toggle-auth');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
 
         let isLogin = true;
 
         // Check if already logged in
-        const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
-        if (user) {
+        const savedUser = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
+        if (savedUser && savedUser.uid) {
             window.location.href = '../index.html';
         }
 
         toggleAuth.addEventListener('click', (e) => {
             e.preventDefault();
             isLogin = !isLogin;
+            loginError.style.display = 'none';
+            signupError.style.display = 'none';
             
             if (isLogin) {
                 loginForm.style.display = 'block';
@@ -158,127 +230,123 @@
             document.getElementById('toggle-auth').addEventListener('click', arguments.callee);
         });
 
-        // Form Validation
-        function validateEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        // Show error
+        function showError(message, type = 'login') {
+            if (type === 'login') {
+                loginError.textContent = message;
+                loginError.style.display = 'block';
+            } else {
+                signupError.textContent = message;
+                signupError.style.display = 'block';
+            }
         }
 
-        // Login
-        loginForm.addEventListener('submit', (e) => {
+        // Email/Password Login
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
-            
-            let valid = true;
-            
-            if (!validateEmail(email)) {
-                document.getElementById('login-email').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('login-email').parentElement.classList.remove('error');
-            }
-            
-            if (password.length < 6) {
-                document.getElementById('login-password').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('login-password').parentElement.classList.remove('error');
-            }
-            
-            if (!valid) return;
-            
-            // Check stored users
-            const users = JSON.parse(localStorage.getItem('quizoxUsers') || '[]');
-            const existingUser = users.find(u => u.email === email && u.password === password);
-            
-            if (existingUser) {
-                localStorage.setItem('quizoxUser', JSON.stringify(existingUser));
-                window.location.href = '../index.html';
-            } else {
-                alert('Invalid email or password. Please try again or sign up!');
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('Logged in:', userCredential.user.email);
+            } catch (error) {
+                console.error('Login error:', error);
+                let message = 'Login failed. ';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        message += 'No account found with this email.';
+                        break;
+                    case 'auth/wrong-password':
+                        message += 'Incorrect password.';
+                        break;
+                    case 'auth/invalid-email':
+                        message += 'Invalid email address.';
+                        break;
+                    case 'auth/too-many-requests':
+                        message += 'Too many attempts. Try again later.';
+                        break;
+                    default:
+                        message += error.message;
+                }
+                
+                showError(message, 'login');
             }
         });
 
-        // Signup
-        signupForm.addEventListener('submit', (e) => {
+        // Email/Password Signup
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = document.getElementById('signup-name').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             const confirm = document.getElementById('signup-confirm').value;
-            
-            let valid = true;
-            
+
+            // Validation
             if (name.length < 2) {
-                document.getElementById('signup-name').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('signup-name').parentElement.classList.remove('error');
-            }
-            
-            if (!validateEmail(email)) {
-                document.getElementById('signup-email').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('signup-email').parentElement.classList.remove('error');
-            }
-            
-            if (password.length < 6) {
-                document.getElementById('signup-password').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('signup-password').parentElement.classList.remove('error');
-            }
-            
-            if (password !== confirm) {
-                document.getElementById('signup-confirm').parentElement.classList.add('error');
-                valid = false;
-            } else {
-                document.getElementById('signup-confirm').parentElement.classList.remove('error');
-            }
-            
-            if (!valid) return;
-            
-            // Check if email exists
-            const users = JSON.parse(localStorage.getItem('quizoxUsers') || '[]');
-            if (users.find(u => u.email === email)) {
-                alert('An account with this email already exists!');
+                showError('Name must be at least 2 characters.', 'signup');
                 return;
             }
-            
-            // Create user
-            const newUser = {
-                id: Date.now(),
-                name,
-                email,
-                password,
-                createdAt: new Date().toISOString()
-            };
-            
-            users.push(newUser);
-            localStorage.setItem('quizoxUsers', JSON.stringify(users));
-            localStorage.setItem('quizoxUser', JSON.stringify(newUser));
-            
-            alert('Account created successfully! Welcome to Quizox!');
-            window.location.href = '../index.html';
-        });
 
-        // Google Sign In (Simulated)
-        document.getElementById('google-btn').addEventListener('click', () => {
-            const name = prompt('Enter your name for Google sign-in:');
-            if (name) {
-                const user = {
-                    id: Date.now(),
-                    name,
-                    email: `${name.toLowerCase().replace(/\s/g, '')}@google.com`,
-                    loginMethod: 'google'
-                };
-                localStorage.setItem('quizoxUser', JSON.stringify(user));
-                window.location.href = '../index.html';
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters.', 'signup');
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('Passwords do not match.', 'signup');
+                return;
+            }
+
+            try {
+                // Create user
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Update profile with name
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+                
+                console.log('Account created:', userCredential.user.email);
+            } catch (error) {
+                console.error('Signup error:', error);
+                let message = 'Signup failed. ';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        message += 'An account with this email already exists.';
+                        break;
+                    case 'auth/invalid-email':
+                        message += 'Invalid email address.';
+                        break;
+                    case 'auth/weak-password':
+                        message += 'Password is too weak.';
+                        break;
+                    default:
+                        message += error.message;
+                }
+                
+                showError(message, 'signup');
             }
         });
+
+        // Google Sign In
+        document.getElementById('google-btn').addEventListener('click', async () => {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                console.log('Google sign in:', result.user.email);
+            } catch (error) {
+                console.error('Google sign in error:', error);
+                showError('Google sign in failed. ' + error.message, 'login');
+            }
+        });
+
+        // Initialize
+        initAuth();
     </script>
 </body>
 </html>

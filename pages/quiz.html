@@ -472,9 +472,10 @@
         function showResults() {
             const percentage = Math.round((score / questions.length) * 100);
             
-            // Get player name
+            // Get player name and uid
             const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
             const playerName = user ? user.name : 'Guest';
+            const userId = user ? user.uid : null;
             
             // Score data object
             const scoreData = {
@@ -484,7 +485,8 @@
                 category: selectedCategory,
                 difficulty: selectedDifficulty,
                 date: new Date().toISOString(),
-                playerName: playerName
+                playerName: playerName,
+                userId: userId
             };
             
             // Save to Firebase (if configured) and localStorage

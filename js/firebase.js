@@ -58,6 +58,7 @@ async function saveScoreToFirebase(scoreData) {
     try {
         await db.collection("leaderboard").add({
             playerName: scoreData.playerName,
+            userId: scoreData.userId || null,
             score: scoreData.score,
             total: scoreData.total,
             percentage: scoreData.percentage,

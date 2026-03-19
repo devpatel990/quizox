@@ -28,14 +28,18 @@ function initFirebase() {
         }
         db = firebase.firestore();
         
-        // Enable offline persistence
-        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-            } else if (err.code === 'unimplemented') {
-                console.log('The current browser does not support offline persistence.');
-            }
-        });
+        // Enable offline persistence (optional, for better UX)
+        try {
+            db.enablePersistence().catch((err) => {
+                if (err.code === 'failed-precondition') {
+                    console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                } else if (err.code === 'unimplemented') {
+                    console.log('The current browser does not support offline persistence.');
+                }
+            });
+        } catch (e) {
+            // Ignore persistence errors
+        }
         
         console.log('Firebase initialized successfully!');
         return true;

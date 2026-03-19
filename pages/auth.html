@@ -140,6 +140,19 @@
         // Firebase Auth instance
         let auth;
 
+        // Get base path for GitHub Pages - MUST BE FIRST
+        function getHomeUrl() {
+            const path = window.location.pathname;
+            const quizoxIndex = path.indexOf('/quizox/');
+            if (quizoxIndex !== -1) {
+                return path.substring(0, quizoxIndex + '/quizox'.length) + '/index.html';
+            }
+            // Fallback for local testing
+            return '../index.html';
+        }
+
+        const homeUrl = getHomeUrl();
+
         // Initialize Firebase Auth
         function initAuth() {
             if (typeof firebase === 'undefined') {
@@ -147,7 +160,6 @@
                 return;
             }
 
-            // Firebase config
             const firebaseConfig = {
                 apiKey: "AIzaSyBZi9B_y-Va5ADKVic_5kRc4OZEL2O7EUc",
                 authDomain: "quizox-f2b39.firebaseapp.com",
@@ -163,9 +175,7 @@
                 }
                 auth = firebase.auth();
 
-                // Listen for auth state changes
                 auth.onAuthStateChanged(handleAuthStateChange);
-
             } catch (error) {
                 console.error('Auth init error:', error);
                 showError('Failed to connect to Firebase.');
@@ -179,7 +189,6 @@
             const signupForm = document.getElementById('signup-form');
 
             if (user) {
-                // User is signed in
                 const userData = {
                     uid: user.uid,
                     name: user.displayName || user.email.split('@')[0],
@@ -192,6 +201,7 @@
                 window.location.href = homeUrl;
             } else {
                 // User is signed out
+                localStorage.removeItem('quizoxUser');
                 loadingState.style.display = 'none';
                 loginForm.style.display = 'block';
             }
@@ -209,19 +219,6 @@
 
         let isLogin = true;
 
-        // Get base path for GitHub Pages
-        const getBasePath = () => {
-            const path = window.location.pathname;
-            const quizoxIndex = path.indexOf('/quizox/');
-            if (quizoxIndex !== -1) {
-                return path.substring(0, quizoxIndex + '/quizox'.length);
-            }
-            return '';
-        };
-
-        const basePath = getBasePath();
-        const homeUrl = basePath + '/index.html';
-        
         // Check if already logged in
         const savedUser = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
         if (savedUser && savedUser.uid) {
@@ -247,8 +244,6 @@
                 authSubtitle.textContent = 'Join Quizox and compete globally';
                 authFooter.innerHTML = 'Already have an account? <a href="#" id="toggle-auth">Sign in</a>';
             }
-            
-            document.getElementById('toggle-auth').addEventListener('click', arguments.callee);
         });
 
         // Show error
@@ -272,24 +267,16 @@
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 
-                // Check if email is verified
                 if (!userCredential.user.emailVerified) {
-                    // Sign out if not verified
                     await auth.signOut();
-                    
-                    alert('⚠️ Email not verified!\n\nPlease check your email and click the verification link first.\n\n📧 Sent to: ' + email);
-                    
-                    // Switch to login with message
+                    alert('⚠️ Email not verified!\n\nPlease check your email and click the verification link first.');
                     authSubtitle.textContent = 'Verify your email first, then login';
                     return;
                 }
                 
-                console.log('Logged in:', userCredential.user.email);
-                
                 // Redirect to home on success
-                window.location.href = '../index.html';
+                window.location.href = homeUrl;
             } catch (error) {
-                console.error('Login error:', error);
                 let message = 'Login failed. ';
                 
                 switch (error.code) {
@@ -322,7 +309,6 @@
             const password = document.getElementById('signup-password').value;
             const confirm = document.getElementById('signup-confirm').value;
 
-            // Validation
             if (name.length < 2) {
                 showError('Name must be at least 2 characters.', 'signup');
                 return;
@@ -339,24 +325,18 @@
             }
 
             try {
-                // Create user
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 
-                // Update profile with name
                 await userCredential.user.updateProfile({
                     displayName: name
                 });
 
-                // Send verification email
                 await userCredential.user.sendEmailVerification();
                 
-                // Show verification message
-                alert('✅ Account created!\n\n📧 Verification email sent to: ' + email + '\n\nPlease check your email and click the verification link to activate your account.');
+                alert('✅ Account created!\n\n📧 Verification email sent to: ' + email + '\n\nPlease check your email and click the verification link.');
                 
-                // Sign out - user must verify first
                 await auth.signOut();
                 
-                // Switch to login form
                 loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
                 authTitle.textContent = 'Verify Your Email';
@@ -364,7 +344,6 @@
                 authFooter.innerHTML = 'Don\'t have an account? <a href="#" id="toggle-auth">Sign up</a>';
                 
             } catch (error) {
-                console.error('Signup error:', error);
                 let message = 'Signup failed. ';
                 
                 switch (error.code) {
@@ -389,10 +368,8 @@
         document.getElementById('google-btn').addEventListener('click', async () => {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
-                const result = await auth.signInWithPopup(provider);
-                console.log('Google sign in:', result.user.email);
+                await auth.signInWithPopup(provider);
             } catch (error) {
-                console.error('Google sign in error:', error);
                 showError('Google sign in failed. ' + error.message, 'login');
             }
         });

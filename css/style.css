@@ -217,6 +217,55 @@ a {
     cursor: pointer;
 }
 
+/* Mobile Menu Dropdown */
+.mobile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 16px;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 999;
+}
+
+.mobile-menu.active {
+    display: flex;
+}
+
+.mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.mobile-link:hover {
+    background: var(--glass);
+    color: var(--primary);
+}
+
+.mobile-theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
 /* Cookie Popup */
 .cookie-popup {
     position: fixed;
@@ -1453,6 +1502,10 @@ a {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    
+    .mobile-menu-btn.active i {
+        transform: rotate(90deg);
     }
     
     .hero-title {

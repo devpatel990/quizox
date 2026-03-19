@@ -151,27 +151,78 @@ function playSound(type) {
 // Auth State
 function updateAuthUI() {
     const authLink = document.getElementById('auth-link');
-    if (!authLink) return;
+    const mobileAuthLink = document.getElementById('mobile-auth-link');
+    const mobileLogout = document.getElementById('mobile-logout');
     
     const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
     
     if (user) {
-        authLink.innerHTML = `<i class="fas fa-user-circle"></i> ${user.name.split(' ')[0]}`;
-        authLink.href = '#';
-        authLink.onclick = () => {
-            if (confirm('Logout?')) {
-                localStorage.removeItem('quizoxUser');
-                updateAuthUI();
-            }
-        };
+        const displayName = user.name ? user.name.split(' ')[0] : 'Account';
+        
+        if (authLink) {
+            authLink.innerHTML = `<i class="fas fa-user-circle"></i> ${displayName}`;
+            authLink.href = '#';
+            authLink.onclick = () => {
+                if (confirm('Logout?')) {
+                    localStorage.removeItem('quizoxUser');
+                    updateAuthUI();
+                }
+            };
+        }
+        
+        if (mobileAuthLink) {
+            mobileAuthLink.innerHTML = `<i class="fas fa-user-circle"></i> ${displayName}`;
+            mobileAuthLink.href = '#';
+            mobileAuthLink.onclick = (e) => {
+                e.preventDefault();
+                if (confirm('Logout?')) {
+                    localStorage.removeItem('quizoxUser');
+                    updateAuthUI();
+                    location.reload();
+                }
+            };
+        }
+        
+        if (mobileLogout) {
+            mobileLogout.style.display = 'none';
+        }
     } else {
-        authLink.innerHTML = '<i class="fas fa-user"></i> Login';
-        authLink.href = 'pages/auth.html';
-        authLink.onclick = null;
+        if (authLink) {
+            authLink.innerHTML = '<i class="fas fa-user"></i> Login';
+            authLink.href = 'pages/auth.html';
+            authLink.onclick = null;
+        }
+        
+        if (mobileAuthLink) {
+            mobileAuthLink.innerHTML = '<i class="fas fa-user"></i> Login';
+            mobileAuthLink.href = 'pages/auth.html';
+            mobileAuthLink.onclick = null;
+        }
     }
 }
 
 updateAuthUI();
+
+// Mobile Menu Toggle
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+
+if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('active');
+        mobileMenuBtn.classList.toggle('active');
+    });
+}
+
+// Mobile Theme Toggle
+const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+if (mobileThemeToggle) {
+    mobileThemeToggle.addEventListener('click', () => {
+        themeToggle.click();
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        mobileThemeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+    });
+}
 
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {

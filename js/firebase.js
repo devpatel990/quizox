@@ -1,5 +1,6 @@
 // Firebase Configuration for Quizox
-// Using Firebase Compat SDK for browser use
+// SECURITY: For production, use Firebase App Check and restrict API keys
+// See: https://firebase.google.com/docs/app-check
 
 // Initialize Firebase
 let db = null;
@@ -11,23 +12,31 @@ function initFirebase() {
     }
     
     const firebaseConfig = {
+        // Note: For production, use environment variables or Firebase App Check
+        // This is the public config (not the API key)
         apiKey: "AIzaSyBZi9B_y-Va5ADKVic_5kRc4OZEL2O7EUc",
         authDomain: "quizox-f2b39.firebaseapp.com",
         projectId: "quizox-f2b39",
         storageBucket: "quizox-f2b39.firebasestorage.app",
         messagingSenderId: "117459133919",
-        appId: "1:117459133919:web:ca28b089ec2d8afe73d06a",
-        measurementId: "G-3S3FS2PPZP"
+        appId: "1:117459133919:web:ca28b089ec2d8afe73d06a"
     };
     
     try {
-        // Initialize Firebase app
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        
-        // Initialize Firestore
         db = firebase.firestore();
+        
+        // Enable offline persistence
+        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code === 'unimplemented') {
+                console.log('The current browser does not support offline persistence.');
+            }
+        });
+        
         console.log('Firebase initialized successfully!');
         return true;
     } catch (error) {
@@ -36,15 +45,12 @@ function initFirebase() {
     }
 }
 
-// Check if Firebase is configured
 function isFirebaseConfigured() {
     return db !== null;
 }
 
-// Save score to Firebase
 async function saveScoreToFirebase(scoreData) {
     if (!db) {
-        console.log('Firebase not initialized, saving to localStorage only');
         saveScoreLocally(scoreData);
         return false;
     }
@@ -60,26 +66,21 @@ async function saveScoreToFirebase(scoreData) {
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Also save locally
         saveScoreLocally(scoreData);
-        console.log('Score saved to Firebase!');
         return true;
     } catch (error) {
         console.error('Error saving to Firebase:', error);
-        // Fallback to localStorage
         saveScoreLocally(scoreData);
         return false;
     }
 }
 
-// Save to localStorage as backup
 function saveScoreLocally(scoreData) {
     const scores = JSON.parse(localStorage.getItem('quizoxScores') || '[]');
     scores.push(scoreData);
     localStorage.setItem('quizoxScores', JSON.stringify(scores));
 }
 
-// Get top scores from Firebase
 async function getLeaderboardFromFirebase(limitCount = 50) {
     if (!db) {
         return null;
@@ -98,13 +99,7 @@ async function getLeaderboardFromFirebase(limitCount = 50) {
         return snapshot.docs.map((doc, index) => ({
             id: doc.id,
             rank: index + 1,
-            playerName: doc.data().playerName,
-            score: doc.data().score,
-            total: doc.data().total,
-            percentage: doc.data().percentage,
-            category: doc.data().category,
-            difficulty: doc.data().difficulty,
-            timestamp: doc.data().timestamp
+            ...doc.data()
         }));
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
@@ -112,10 +107,8 @@ async function getLeaderboardFromFirebase(limitCount = 50) {
     }
 }
 
-// Auto-initialize on load
 initFirebase();
 
-// Export functions
 window.QuizoxFirebase = {
     initFirebase,
     isFirebaseConfigured,

@@ -183,6 +183,7 @@
         let timerInterval = null;
         let timeLeft = 15;
         let isAnswered = false;
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 
         // DOM Elements
         const quizSetup = document.getElementById('quiz-setup');
@@ -202,6 +203,7 @@
         const currentCategoryEl = document.getElementById('current-category');
         const currentDifficultyEl = document.getElementById('current-difficulty');
         const resultsCard = document.getElementById('results-card');
+        const soundToggle = document.getElementById('sound-toggle');
 
         // Category Names
         const categoryNames = {

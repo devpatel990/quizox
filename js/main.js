@@ -31,21 +31,26 @@ const acceptBtn = document.getElementById('accept-cookies');
 const rejectBtn = document.getElementById('reject-cookies');
 
 function checkCookieConsent() {
+    if (!cookiePopup) return;
     const consent = localStorage.getItem('cookieConsent');
     if (consent === null) {
         cookiePopup.classList.remove('hidden');
     }
 }
 
-acceptBtn.addEventListener('click', () => {
-    localStorage.setItem('cookieConsent', 'accepted');
-    cookiePopup.classList.add('hidden');
-});
+if (acceptBtn) {
+    acceptBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'accepted');
+        cookiePopup.classList.add('hidden');
+    });
+}
 
-rejectBtn.addEventListener('click', () => {
-    localStorage.setItem('cookieConsent', 'rejected');
-    cookiePopup.classList.add('hidden');
-});
+if (rejectBtn) {
+    rejectBtn.addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'rejected');
+        cookiePopup.classList.add('hidden');
+    });
+}
 
 checkCookieConsent();
 

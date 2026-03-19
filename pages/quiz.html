@@ -203,7 +203,6 @@
         const currentCategoryEl = document.getElementById('current-category');
         const currentDifficultyEl = document.getElementById('current-difficulty');
         const resultsCard = document.getElementById('results-card');
-        const soundToggle = document.getElementById('sound-toggle');
 
         // Category Names
         const categoryNames = {
@@ -220,17 +219,6 @@
             '15': 'Video Games',
             '25': 'Art'
         };
-
-        // Sound Toggle
-        const soundToggle = document.getElementById('sound-toggle');
-        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
-
-        soundToggle.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            localStorage.setItem('soundEnabled', soundEnabled);
-            soundToggle.innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
-            soundToggle.classList.toggle('muted', !soundEnabled);
-        });
 
         // Question Count Slider
         questionRange.addEventListener('input', () => {

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizox - Test Your Mind, Anytime</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <div id="cookie-consent" class="cookie-popup hidden">
+        <div class="cookie-content">
+            <i class="fas fa-cookie-bite"></i>
+            <p>We use cookies to enhance your experience. By continuing, you agree to our <a href="pages/cookie-policy.html">Cookie Policy</a>.</p>
+            <div class="cookie-buttons">
+                <button id="accept-cookies" class="btn btn-primary">Accept</button>
+                <button id="reject-cookies" class="btn btn-secondary">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="40" height="40">
+                        <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
+                        <text x="50" y="65" text-anchor="middle" font-size="40" fill="white">?</text>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea"/>
+                                <stop offset="100%" style="stop-color:#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">Quizox</span>
+            </a>
+            <div class="nav-links">
+                <a href="pages/quiz.html" class="nav-link"><i class="fas fa-play"></i> Play</a>
+                <a href="pages/leaderboard.html" class="nav-link"><i class="fas fa-trophy"></i> Leaderboard</a>
+                <a href="pages/auth.html" class="nav-link" id="auth-link"><i class="fas fa-user"></i> Login</a>
+                <button id="theme-toggle" class="theme-btn"><i class="fas fa-moon"></i></button>
+            </div>
+            <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+        </div>
+    </nav>
+
+    <main class="hero">
+        <div class="hero-bg">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-bolt"></i> Free & Unlimited Quizzes
+            </div>
+            <h1 class="hero-title">
+                <span class="gradient-text">Test Your Mind,</span><br>
+                <span class="gradient-text">Anytime</span>
+            </h1>
+            <p class="hero-desc">
+                Challenge yourself with thousands of trivia questions across multiple categories. 
+                Track your progress, compete on leaderboards, and become the ultimate quiz champion!
+            </p>
+            <div class="hero-actions">
+                <a href="pages/quiz.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-play"></i> Start Quiz Now
+                </a>
+                <a href="pages/leaderboard.html" class="btn btn-outline btn-lg">
+                    <i class="fas fa-trophy"></i> View Leaderboard
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">50K+</span>
+                    <span class="stat-label">Questions</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">20+</span>
+                    <span class="stat-label">Categories</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-label">Players</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="quiz-card">
+                <div class="quiz-card-header">
+                    <span class="category-tag">Science</span>
+                    <span class="timer-badge"><i class="fas fa-clock"></i> 15s</span>
+                </div>
+                <h3 class="quiz-question">What is the chemical symbol for gold?</h3>
+                <div class="quiz-options">
+                    <button class="option wrong"><i class="fas fa-times"></i> Ag</button>
+                    <button class="option correct"><i class="fas fa-check"></i> Au</button>
+                    <button class="option">Go</button>
+                    <button class="option">Gd</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose <span class="gradient-text">Quizox</span>?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Unlimited Questions</h3>
+                    <p>Access thousands of questions from Open Trivia Database. Play endlessly!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>Global Leaderboard</h3>
+                    <p>Compete with players worldwide and climb to the top of Quizox!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3>20+ Categories</h3>
+                    <p>From Science to History, Art to Sports - choose your challenge!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Play Anywhere</h3>
+                    <p>Fully responsive design. Play on desktop, tablet, or mobile!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor your performance, see improvement over time.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>Free Forever</h3>
+                    <p>No hidden fees, no premium. Everything is 100% free!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories">
+        <div class="container">
+            <h2 class="section-title">Popular <span class="gradient-text">Categories</span></h2>
+            <div class="categories-scroll">
+                <a href="pages/quiz.html?category=9" class="category-card">
+                    <i class="fas fa-brain"></i>
+                    <span>General Knowledge</span>
+                </a>
+                <a href="pages/quiz.html?category=17" class="category-card">
+                    <i class="fas fa-flask"></i>
+                    <span>Science & Nature</span>
+                </a>
+                <a href="pages/quiz.html?category=21" class="category-card">
+                    <i class="fas fa-futbol"></i>
+                    <span>Sports</span>
+                </a>
+                <a href="pages/quiz.html?category=23" class="category-card">
+                    <i class="fas fa-scroll"></i>
+                    <span>History</span>
+                </a>
+                <a href="pages/quiz.html?category=11" class="category-card">
+                    <i class="fas fa-film"></i>
+                    <span>Film</span>
+                </a>
+                <a href="pages/quiz.html?category=20" class="category-card">
+                    <i class="fas fa-music"></i>
+                    <span>Music</span>
+                </a>
+                <a href="pages/quiz.html?category=18" class="category-card">
+                    <i class="fas fa-laptop-code"></i>
+                    <span>Computers</span>
+                </a>
+                <a href="pages/quiz.html?category=27" class="category-card">
+                    <i class="fas fa-paw"></i>
+                    <span>Animals</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 100 100" width="32" height="32">
+                                <circle cx="50" cy="50" r="45" fill="url(#logoGrad2)" />
+                                <text x="50" y="65" text-anchor="middle" font-size="40" fill="white">?</text>
+                                <defs>
+                                    <linearGradient id="logoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#667eea"/>
+                                        <stop offset="100%" style="stop-color:#764ba2"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <span class="logo-text">Quizox</span>
+                    </a>
+                    <p>Test Your Mind, Anytime</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Legal</h4>
+                    <a href="pages/privacy-policy.html">Privacy Policy</a>
+                    <a href="pages/terms.html">Terms & Conditions</a>
+                    <a href="pages/cookie-policy.html">Cookie Policy</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <a href="pages/quiz.html">Play Quiz</a>
+                    <a href="pages/leaderboard.html">Leaderboard</a>
+                    <a href="pages/auth.html">Login</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Connect</h4>
+                    <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Quizox. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

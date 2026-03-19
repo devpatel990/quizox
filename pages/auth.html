@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up - Quizox</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.html" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="40" height="40">
+                        <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
+                        <text x="50" y="65" text-anchor="middle" font-size="40" fill="white">?</text>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea"/>
+                                <stop offset="100%" style="stop-color:#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">Quizox</span>
+            </a>
+            <div class="nav-links">
+                <a href="quiz.html" class="nav-link"><i class="fas fa-play"></i> Play</a>
+                <a href="leaderboard.html" class="nav-link"><i class="fas fa-trophy"></i> Leaderboard</a>
+                <button id="theme-toggle" class="theme-btn"><i class="fas fa-moon"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="../index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 100 100" width="40" height="40">
+                            <circle cx="50" cy="50" r="45" fill="url(#logoGrad)" />
+                            <text x="50" y="65" text-anchor="middle" font-size="40" fill="white">?</text>
+                            <defs>
+                                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#667eea"/>
+                                    <stop offset="100%" style="stop-color:#764ba2"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Quizox</span>
+                </a>
+                <h1 id="auth-title">Welcome Back!</h1>
+                <p id="auth-subtitle">Sign in to track your scores</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" placeholder="Enter your email" required>
+                    <span class="error-msg">Please enter a valid email</span>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                    <span class="error-msg">Password is required</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+
+            <!-- Signup Form (Hidden by default) -->
+            <form id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" placeholder="Enter your name" required>
+                    <span class="error-msg">Name is required</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email" required>
+                    <span class="error-msg">Please enter a valid email</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password (min 6 chars)" required>
+                    <span class="error-msg">Password must be at least 6 characters</span>
+                </div>
+                <div class="form-group">
+                    <label for="signup-confirm">Confirm Password</label>
+                    <input type="password" id="signup-confirm" placeholder="Confirm your password" required>
+                    <span class="error-msg">Passwords do not match</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="auth-divider">or continue with</div>
+
+            <button class="btn btn-google" id="google-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+            </button>
+
+            <p class="auth-footer" id="auth-footer">
+                Don't have an account? <a href="#" id="toggle-auth">Sign up</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Auth Toggle
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const authTitle = document.getElementById('auth-title');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const authFooter = document.getElementById('auth-footer');
+        const toggleAuth = document.getElementById('toggle-auth');
+
+        let isLogin = true;
+
+        // Check if already logged in
+        const user = JSON.parse(localStorage.getItem('quizoxUser') || 'null');
+        if (user) {
+            window.location.href = '../index.html';
+        }
+
+        toggleAuth.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            
+            if (isLogin) {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                authTitle.textContent = 'Welcome Back!';
+                authSubtitle.textContent = 'Sign in to track your scores';
+                authFooter.innerHTML = 'Don\'t have an account? <a href="#" id="toggle-auth">Sign up</a>';
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                authTitle.textContent = 'Create Account';
+                authSubtitle.textContent = 'Join Quizox and compete globally';
+                authFooter.innerHTML = 'Already have an account? <a href="#" id="toggle-auth">Sign in</a>';
+            }
+            
+            document.getElementById('toggle-auth').addEventListener('click', arguments.callee);
+        });
+
+        // Form Validation
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            let valid = true;
+            
+            if (!validateEmail(email)) {
+                document.getElementById('login-email').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('login-email').parentElement.classList.remove('error');
+            }
+            
+            if (password.length < 6) {
+                document.getElementById('login-password').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('login-password').parentElement.classList.remove('error');
+            }
+            
+            if (!valid) return;
+            
+            // Check stored users
+            const users = JSON.parse(localStorage.getItem('quizoxUsers') || '[]');
+            const existingUser = users.find(u => u.email === email && u.password === password);
+            
+            if (existingUser) {
+                localStorage.setItem('quizoxUser', JSON.stringify(existingUser));
+                window.location.href = '../index.html';
+            } else {
+                alert('Invalid email or password. Please try again or sign up!');
+            }
+        });
+
+        // Signup
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+            
+            let valid = true;
+            
+            if (name.length < 2) {
+                document.getElementById('signup-name').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('signup-name').parentElement.classList.remove('error');
+            }
+            
+            if (!validateEmail(email)) {
+                document.getElementById('signup-email').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('signup-email').parentElement.classList.remove('error');
+            }
+            
+            if (password.length < 6) {
+                document.getElementById('signup-password').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('signup-password').parentElement.classList.remove('error');
+            }
+            
+            if (password !== confirm) {
+                document.getElementById('signup-confirm').parentElement.classList.add('error');
+                valid = false;
+            } else {
+                document.getElementById('signup-confirm').parentElement.classList.remove('error');
+            }
+            
+            if (!valid) return;
+            
+            // Check if email exists
+            const users = JSON.parse(localStorage.getItem('quizoxUsers') || '[]');
+            if (users.find(u => u.email === email)) {
+                alert('An account with this email already exists!');
+                return;
+            }
+            
+            // Create user
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                createdAt: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('quizoxUsers', JSON.stringify(users));
+            localStorage.setItem('quizoxUser', JSON.stringify(newUser));
+            
+            alert('Account created successfully! Welcome to Quizox!');
+            window.location.href = '../index.html';
+        });
+
+        // Google Sign In (Simulated)
+        document.getElementById('google-btn').addEventListener('click', () => {
+            const name = prompt('Enter your name for Google sign-in:');
+            if (name) {
+                const user = {
+                    id: Date.now(),
+                    name,
+                    email: `${name.toLowerCase().replace(/\s/g, '')}@google.com`,
+                    loginMethod: 'google'
+                };
+                localStorage.setItem('quizoxUser', JSON.stringify(user));
+                window.location.href = '../index.html';
+            }
+        });
+    </script>
+</body>
+</html>
